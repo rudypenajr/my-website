@@ -2,32 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+.special-anchor-gradient {
+  /* transition: height 0.5s cubic-bezier(0.6, 0, 0.4, 1); */
+  @apply after:transition-all after:absolute after:left-0 after:-bottom-0.5 after:h-0.5 after:w-full after:-z-10 after:bg-gradient-to-r after:from-teal-400 after:to-yellow-200 hover:after:h-1;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+.prose .subtitle {
+  @apply mt-0;
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+.prose p {
+  @apply my-5;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+.prose ul :where(li > p) {
+  @apply mt-0 mb-1;
+}
+
+/* :not(:where([class~=not-prose],[class~=not-prose] *)) */
+.prose :where(ul) {
+  @apply list-disc list-outside mt-5 mb-5 pl-6;
+}
+
+/* :not(:where([class~=not-prose],[class~=not-prose] *)) */
+.prose :where(ul > li) {
+  @apply pl-1.5;
+}
+
+/* :not(:where([class~=not-prose],[class~=not-prose] *)) */
+.prose :where(li) {
+  @apply my-2;
 }
