@@ -11,7 +11,6 @@ export const SpecialAnchorComponent: FC<SpecialAnchorType> = ({
   anchorText,
   anchorHref,
 }) => {
-  // bg-gradient-to-r from-teal-400 to-yellow-200
   return (
     <Link
       className="content-none relative z-10 special-anchor-gradient"

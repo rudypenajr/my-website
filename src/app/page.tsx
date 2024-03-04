@@ -1,5 +1,15 @@
 import SpecialAnchor from "@/components/base/SpecialAnchorComponent";
-import Link from "next/link";
+
+//colorkit.co/palettes/gradient/
+//colorkit.co/palette/c7522a-cb6036-cf6e41-d68a58-dea66f-e5c185-f0daa5-fbf2c4-dae0b8-b8cdab/
+
+// https://digitalsynopsis.com/design/beautiful-color-gradient-palettes/
+// Number 22:
+// #264D59 -- #022c22 emerald-950
+// #43978D -- #0d9488 teal-600
+// #F9E07F -- #fef08a yellow-200
+// #F9AD6A -- #fdba74 orange-300
+// #D46C4E -- #b45309 amber-700
 
 export default function Home() {
   return (

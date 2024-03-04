@@ -4,7 +4,27 @@
 
 .special-anchor-gradient {
   /* transition: height 0.5s cubic-bezier(0.6, 0, 0.4, 1); */
-  @apply after:transition-all after:absolute after:left-0 after:-bottom-0.5 after:h-0.5 after:w-full after:-z-10 after:bg-gradient-to-r after:from-teal-400 after:to-yellow-200 hover:after:h-1;
+  @apply after:transition-all after:absolute after:left-0 after:-bottom-0.5 after:h-0.5 after:w-full after:-z-10 after:bg-gradient-to-r after:from-orange-300 after:to-teal-600 hover:after:h-1;
+}
+
+.gradient-option-1 {
+  @apply bg-gradient-to-r from-emerald-950 to-teal-600;
+}
+
+.gradient-option-2 {
+  @apply bg-gradient-to-r from-teal-600 to-yellow-600;
+}
+
+.gradient-option-3 {
+  @apply bg-gradient-to-r from-yellow-600 to-orange-300;
+}
+
+.gradient-option-4 {
+  @apply bg-gradient-to-r from-orange-300 to-teal-600;
+}
+
+.gradient-option-5 {
+  @apply bg-gradient-to-r from-amber-700 to-orange-600;
 }
 
 .prose .subtitle {
@@ -32,4 +52,8 @@
 /* :not(:where([class~=not-prose],[class~=not-prose] *)) */
 .prose :where(li) {
   @apply my-2;
+}
+
+.pills > span:first-child {
+  @apply ml-0;
 }
