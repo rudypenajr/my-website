@@ -11,8 +11,8 @@ export default function WorkPage() {
       <div className="prose prose-neutral dark:prose-invert">
         <p>
           Focused on building tools and products that developers love while
-          balancing the need for teams to move and fail fast. Below is a summary
-          of my work so far.
+          balancing the need for teams to move quickly and fail fast. Below is a
+          summary of my work so far.
         </p>
 
         <hr className="my-6 border-neutral-100 dark:border-neutral-800"></hr>

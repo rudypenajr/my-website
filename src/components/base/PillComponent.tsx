@@ -6,7 +6,7 @@ export type PillType = {
 
 export const PillComponent: FC<PillType> = ({ text }) => {
   return (
-    <span className="text-xs px-3 py-2 text-white rounded-full gradient-option-2 inline-block mx-1">
+    <span className="text-xs px-3 py-2 text-opacity-100 rounded-full gradient-option-2 inline-block mx-1">
       # {text}
     </span>
   );

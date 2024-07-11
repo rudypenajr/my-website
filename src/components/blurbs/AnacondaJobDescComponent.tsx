@@ -1,4 +1,5 @@
 import { CallOutComponent } from "@/components/base/CallOutComponent";
+import PillComponent from "@/components/base/PillComponent";
 import SpecialAnchor, {
   SpecialAnchorComponent,
 } from "@/components/base/SpecialAnchorComponent";
@@ -15,10 +16,10 @@ export const AnacondaJobDescComponent = () => {
       <p className="subtitle text-neutral-600 dark:text-neutral-400 text-sm">
         Senior Software Engineer III, 2019 - 2022
       </p>
-      Hy-Vee, an almost 100-year-old grocery chain in the United States, wanted
+      {/* Hy-Vee, an almost 100-year-old grocery chain in the United States, wanted
       to build a new version of their digital storefront. I joined a team of
       product engineers working across web and mobile to rebuild their legacy
-      .NET application (~500k MAU) with React and React Native.
+      .NET application (~500k MAU) with React and React Native. */}
       <p>
         I joined Anaconda as an Application Engineer focusing on developing
         features for their existing Anaconda Enterprise 5 Solution using Angular
@@ -92,6 +93,13 @@ export const AnacondaJobDescComponent = () => {
           .
         </li>
       </ul>
+
+      <div className="pills">
+        <PillComponent text="Python" />
+        <PillComponent text="FastAPI" />
+        <PillComponent text="React" />
+        <PillComponent text="Angular" />
+      </div>
     </>
   );
 };

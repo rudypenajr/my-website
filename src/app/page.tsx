@@ -14,17 +14,25 @@ import SpecialAnchor from "@/components/base/SpecialAnchorComponent";
 export default function Home() {
   return (
     <>
+      <h1 className="font-medium text-2xl mb-8 tracking-tighter mb-80">
+        🚧 🚧 🚧{" "}
+        <span className="mx-2">
+          Pardon the mess. Site is working in progress.
+        </span>
+        🚧 🚧 🚧
+      </h1>
+
       <h1 className="font-medium text-2xl mb-8 tracking-tighter">
         👋 <span className="mx-2">hello</span> /{" "}
         <span className="mx-2">howdy</span> / <span className="mx-2">hola</span>
       </h1>
 
-      <h1 className="font-medium text-2xl mb-8 tracking-tighter">
+      {/* <h1 className="font-medium text-2xl mb-8 tracking-tighter">
         🤠 <span className="ml-2 mr-1">my</span>
         <span className="mx-1">name</span>
         <span className="mx-1">is</span>
         <span className="mx-1">rudy</span>
-      </h1>
+      </h1> */}
 
       <h1 className="font-medium text-2xl mb-8 flex justify-end tracking-tighter">
         <span className="mx-1">my</span>
@@ -41,7 +49,7 @@ export default function Home() {
         <SpecialAnchor anchorHref="https://www.dtn.com/" anchorText="DTN" />, I
         lead a team of developers who build and maintain a suite of
         tools/packages such as a design system, a component library,
-        authentication, that support{" "}
+        authentication that support{" "}
         <SpecialAnchor anchorHref="https://www.dtn.com/" anchorText="DTN" />
         {""} developers.
       </p>

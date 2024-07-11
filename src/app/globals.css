@@ -12,7 +12,7 @@
 }
 
 .gradient-option-2 {
-  @apply bg-gradient-to-r from-teal-600 to-yellow-600;
+  @apply bg-gradient-to-r from-teal-600/50 to-yellow-600/50;
 }
 
 .gradient-option-3 {
@@ -25,6 +25,10 @@
 
 .gradient-option-5 {
   @apply bg-gradient-to-r from-amber-700 to-orange-600;
+}
+
+.gradient-clear-1 {
+  @apply bg-gradient-to-r from-10% to-orange-600;
 }
 
 .prose .subtitle {

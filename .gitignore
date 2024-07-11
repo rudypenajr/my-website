@@ -34,3 +34,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vscode/
+.vscode/settings.json
+.vscode/.c3-extension-settings.json
