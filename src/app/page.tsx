@@ -16,9 +16,7 @@ export default function Home() {
     <>
       <h1 className="font-medium text-2xl mb-8 tracking-tighter mb-80">
         🚧 🚧 🚧{" "}
-        <span className="mx-2">
-          Pardon the mess. Site is working in progress.
-        </span>
+        <span className="mx-2">Pardon the mess. Site is work in progress.</span>
         🚧 🚧 🚧
       </h1>
 

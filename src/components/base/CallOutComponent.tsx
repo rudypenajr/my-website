@@ -15,7 +15,7 @@ export const CallOutComponent: FC<BadCallOutType> = ({
   return (
     // <span className="content-none inline-block relative z-10 bad-call-out-gradient">
     <span
-      className={`px-2 bg-gradient-to-r ${
+      className={`px-1 bg-gradient-to-r ${
         positive ? "from-green-200 to-green-200" : "from-red-300 to-red-300"
       }`}
     >

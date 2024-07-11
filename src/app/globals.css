@@ -11,9 +11,42 @@
   @apply bg-gradient-to-r from-emerald-950 to-teal-600;
 }
 
+/*** MAIN Gradient for Links & Borders ***/
 .gradient-option-2 {
   @apply bg-gradient-to-r from-teal-600/50 to-yellow-600/50;
 }
+
+.border-bottom-gradient {
+  @apply border-b-2 bg-gradient-to-r from-teal-600 to-yellow-600;
+}
+
+.border-gradient {
+  background-image: linear-gradient(#d99a5a, #d99a5a);
+  background-size: 0% 0.1em;
+  background-position-y: 100%;
+  background-position-x: 50%;
+  background-repeat: no-repeat;
+  transition: background-size 0.2s ease-in-out;
+  text-decoration: none;
+  /* border: 10px solid;
+  border-image-slice: 1;
+  border-width: 5px; */
+}
+
+.border-gradient:hover,
+.border-gradient:focus,
+.border-gradient:active {
+  background-size: 100% 0.1em;
+}
+
+.border-gradient-active {
+  background-size: 100% 0.1em;
+}
+
+.border-gradient-green {
+  border-image-source: linear-gradient(to left, #00c853, #b2ff59);
+}
+/*** END: MAIN Gradient for Links ***/
 
 .gradient-option-3 {
   @apply bg-gradient-to-r from-yellow-600 to-orange-300;
