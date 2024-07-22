@@ -10,9 +10,6 @@ export const Nav = () => {
   // i.e. /work ==> ["/", "work"]
   const url = pathname.split("/")[1];
 
-  console.log("pathname", pathname);
-  console.log("url", url);
-
   // const baseLinkStyles = `transition-all hover:text-neutral-800 dark:hover:text-neutral-200 flex align-middle relative py-1 px-2`;
   const baseLinkStyles = `hover:text-neutral-800 dark:hover:text-neutral-200 flex align-middle relative py-1 px-2 border-gradient`;
 

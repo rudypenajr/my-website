@@ -1,7 +1,14 @@
+import { Metadata } from "next";
+
 import AnacondaJobDescComponent from "@/components/blurbs/AnacondaJobDescComponent";
 import BitfusionJobDescComponent from "@/components/blurbs/BitfusionJobDescComponent";
 import DTNJobDescComponent from "@/components/blurbs/DTNJobDescComponent";
 import IBMJobDescComponent from "@/components/blurbs/IBMJobDescComponent";
+
+export const metadata: Metadata = {
+  title: "Work | Rudy Pena",
+  description: "A summary of my work and contributions.",
+};
 
 export default function WorkPage() {
   return (
