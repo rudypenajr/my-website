@@ -14,56 +14,45 @@ import SpecialAnchor from "@/components/base/SpecialAnchorComponent";
 export default function Home() {
   return (
     <>
+      {/* 
       <h1 className="font-medium text-2xl mb-8 tracking-tighter mb-80">
         🚧 🚧 🚧{" "}
         <span className="mx-2">Pardon the mess. Site is work in progress.</span>
         🚧 🚧 🚧
-      </h1>
-
+      </h1>  
+      */}
       <h1 className="font-medium text-2xl mb-8 tracking-tighter">
         👋 <span className="mx-2">hello</span> /{" "}
         <span className="mx-2">howdy</span> / <span className="mx-2">hola</span>
       </h1>
-
-      {/* <h1 className="font-medium text-2xl mb-8 tracking-tighter">
-        🤠 <span className="ml-2 mr-1">my</span>
-        <span className="mx-1">name</span>
-        <span className="mx-1">is</span>
-        <span className="mx-1">rudy</span>
-      </h1> */}
-
       <h1 className="font-medium text-2xl mb-8 flex justify-end tracking-tighter">
         <span className="mx-1">my</span>
         <span className="mx-1">name</span>
         <span className="mx-1">is</span>
         <span className="ml-1 mr-2">rudy</span> 🤠
       </h1>
-
-      <p>
-        I&apos;m, <span className="font-bold">primarily</span>, a frontend
-        developer focusing on React. I currently work (link to resume) as a
-        Senior Software Engineer at{" "}
+      <p className="leading-8">
+        I focus on all things Javascript, such as{" "}
+        <span className="font-bold">NextJS, React, and Express</span>. Outside
+        of work, I love to play around with{" "}
+        <span className="font-bold">Python and Golang</span>... while still
+        using NextJS for my interfaces.
+      </p>
+      <div className="my-6"></div>
+      <p className="leading-8">
+        I currently work as a{" "}
+        <span className="font-bold">Lead Software Engineer</span> at{" "}
         <SpecialAnchor anchorHref="https://www.dtn.com/" anchorText="DTN" />. At{" "}
         <SpecialAnchor anchorHref="https://www.dtn.com/" anchorText="DTN" />, I
-        lead a team of developers who build and maintain a suite of
-        tools/packages such as a design system, a component library,
-        authentication that support{" "}
-        <SpecialAnchor anchorHref="https://www.dtn.com/" anchorText="DTN" />
-        {""} developers.
+        wear an array of hats <span className="font-bold">[🧢, 🎩, ⛑️]</span>{" "}
+        from leading a team of engineers that builds and maintains a suite of
+        NPM packages (i.e. design system, authentication) to carving out our new
+        initiatives for Forward Deployed Engineers and setting an infrastructure
+        for AI workflows.
       </p>
 
       <div className="my-6"></div>
-
-      <p>
-        I used the word <span className="font-bold">primarily</span> because,
-        within my career path, I have had the opportunity to go Full Stack,
-        working in languages such as Golang (Chi / Viper / Cobra) and Python
-        (Flask / Python).
-      </p>
-
-      <div className="my-10"></div>
-
-      <hr />
+      {/* <div className="my-10"></div> */}
     </>
   );
 }
