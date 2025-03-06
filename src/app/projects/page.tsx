@@ -15,8 +15,9 @@ export default function ProjectsPage() {
         </h1>
         <p className="mt-6 text-base text-zinc-600 dark:text-zinc-400 leading-8">
           In my spare time, I do my best to keep up with the times. Building
-          little projects using technology I can't use in my day to day. Some I
-          am super proud of, some are work in progress, and some just for fun.
+          little projects using technology I can&apos;t use in my day to day.
+          Some I am super proud of, some are work in progress, and some just for
+          fun.
         </p>
       </header>
 
