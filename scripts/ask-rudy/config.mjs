@@ -14,6 +14,8 @@ export const localIndexPath = path.join(artifactDir, "local-index.json");
 
 // Ollama runs a local HTTP server. The chat model writes answers; the embedding
 // model turns text into vectors for semantic search.
+export const modelProviderName = process.env.ASK_RUDY_MODEL_PROVIDER ?? "ollama";
+export const retrievalProviderName = process.env.ASK_RUDY_RETRIEVAL_PROVIDER ?? "local-json";
 export const ollamaHost = process.env.OLLAMA_HOST ?? "http://127.0.0.1:11434";
 export const chatModel = process.env.ASK_RUDY_CHAT_MODEL ?? "llama3.2";
 export const embeddingModel = process.env.ASK_RUDY_EMBED_MODEL ?? "nomic-embed-text";

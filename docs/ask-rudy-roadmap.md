@@ -96,20 +96,38 @@ ask-rudy is in local-lab mode right now. Try the sample prompts, or reach out to
 
 Keep model and vector providers behind adapters so local and production paths can diverge without rewriting the feature.
 
+MR 1 introduces the boundary without production traffic:
+
+```txt
+Model provider:
+  ollama      active local implementation
+  cloudflare  placeholder for hosted inference MR
+
+Retrieval provider:
+  local-json       active local implementation
+  upstash-vector   placeholder for hosted retrieval MR
+```
+
+Defaults:
+
+```bash
+ASK_RUDY_MODEL_PROVIDER=ollama
+ASK_RUDY_RETRIEVAL_PROVIDER=local-json
+```
+
 ```ts
 type RuntimeMode = "local" | "production";
 type ModelProviderName = "ollama" | "cloudflare";
-type VectorProviderName = "local" | "upstash";
+type RetrievalProviderName = "local-json" | "upstash-vector";
 
-interface LlmProvider {
-  embed(input: string): Promise<number[]>;
-  generate(input: GenerateInput): Promise<GenerateOutput>;
-  generateStructured<T>(input: GenerateInput): Promise<T>;
+interface ModelProvider {
+  embedText(input: string): Promise<number[]>;
+  generateAnswer(input: GenerateInput): Promise<string>;
 }
 
-interface VectorStore {
-  upsertChunks(chunks: KnowledgeChunk[]): Promise<void>;
-  search(queryEmbedding: number[], options: SearchOptions): Promise<SearchResult[]>;
+interface RetrievalProvider {
+  writeChunks(chunks: EmbeddedKnowledgeChunk[]): Promise<void>;
+  search(input: SearchInput): Promise<SearchResult[]>;
 }
 ```
 

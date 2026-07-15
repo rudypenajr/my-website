@@ -6,10 +6,10 @@ import { runAskRudyQuery } from "./run-query.mjs";
 //   npm run ask-rudy:fit -- "Paste a role description"
 //
 // This is the online/question-answering step:
-// 1. embed the user's question with Ollama
-// 2. search our local vector index
+// 1. embed the user's question with the selected model provider
+// 2. search through the selected retrieval provider
 // 3. build a grounded prompt from the best chunks
-// 4. ask Ollama's chat model for the final answer
+// 4. ask the selected model provider for the final answer
 // 5. print the sources we used
 
 // Read simple CLI flags and treat the rest of the command as the user input.
