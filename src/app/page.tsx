@@ -9,9 +9,18 @@ const roles = [
   "Python AI Tooling",
 ];
 
+const isAskRudyUiEnabled =
+  process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_ASK_RUDY_ENABLED === "true";
+
 const commands: Record<string, string> = {
-  help:
-    "Commands: about, skills, stack, work, projects, current, contact, resume, clear\nNavigation: open about, open skills, open experience, open projects, open current, open contact\nAliases: ls, pwd, now, shiplog, cat resume",
+  help: [
+    "Commands: about, skills, stack, work, projects, current, contact, resume, clear",
+    isAskRudyUiEnabled ? "Ask Rudy: ask <question>, fit <role>, sources, lab" : null,
+    "Navigation: open about, open skills, open experience, open projects, open current, open contact",
+    "Aliases: ls, pwd, now, shiplog, cat resume",
+  ]
+    .filter(Boolean)
+    .join("\n"),
   about:
     "Rudy Pena - Staff Software Engineer in Austin, TX.\nI build applied AI platforms, FastAPI MCP services, Python/Node.js SDKs, and product-grade web experiences.",
   skills:
@@ -53,6 +62,61 @@ type TerminalLine = {
   text: string;
   command?: boolean;
 };
+
+type AskRudyMode = "ask" | "fit";
+
+type AskRudySource = {
+  id: string;
+  title: string;
+  path: string;
+  score: number;
+  body: string;
+  tags?: string[];
+};
+
+type AskRudyResult = {
+  mode: AskRudyMode;
+  input: string;
+  answer: string;
+  elapsedMs: number;
+  sources: AskRudySource[];
+};
+
+const askRudyModeMeta: Record<AskRudyMode, { label: string; status: string; inputLabel: string; glyph: string }> = {
+  ask: {
+    label: "Coffee Chat",
+    status: "Conversational mode",
+    inputLabel: "Question for Rudy's knowledge base",
+    glyph: "☕",
+  },
+  fit: {
+    label: "Role Match",
+    status: "Fit analysis mode",
+    inputLabel: "Role or need",
+    glyph: "👔",
+  },
+};
+
+const askRudyStarterCommands = [
+  {
+    label: "Engineer type",
+    mode: "ask" as const,
+    prompt: "What kind of engineer is Rudy?",
+    command: "ask what kind of engineer is rudy?",
+  },
+  {
+    label: "AI projects",
+    mode: "ask" as const,
+    prompt: "What projects show Rudy's AI experience?",
+    command: "ask what projects show rudy's ai experience?",
+  },
+  {
+    label: "Role fit",
+    mode: "fit" as const,
+    prompt: "We need a product-minded AI platform engineer who can build developer tools",
+    command: "fit we need a product-minded AI platform engineer who can build developer tools",
+  },
+];
 
 const highlights = [
   { value: "10+", label: "Years building software" },
@@ -383,11 +447,22 @@ function Navigation() {
 
 function Terminal() {
   const [lines, setLines] = useState<TerminalLine[]>([
-    { text: 'rudy@portfolio ~ % type "help" to explore' },
+    {
+      text: isAskRudyUiEnabled
+        ? 'rudy@portfolio ~ % type "help" to explore. try: ask what kind of engineer is rudy?'
+        : 'rudy@portfolio ~ % type "help" to explore.',
+    },
   ]);
   const [input, setInput] = useState("");
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState<number | null>(null);
+  const [askResult, setAskResult] = useState<AskRudyResult | null>(null);
+  const [askLoading, setAskLoading] = useState(false);
+  const [askError, setAskError] = useState<string | null>(null);
+  const [labVisible, setLabVisible] = useState(false);
+  const [askModalOpen, setAskModalOpen] = useState(false);
+  const [askMode, setAskMode] = useState<AskRudyMode>("ask");
+  const [askDraft, setAskDraft] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -395,10 +470,93 @@ function Terminal() {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [lines]);
 
+  useEffect(() => {
+    if (!isAskRudyUiEnabled) return;
+
+    const openAskRudy = (event: Event) => {
+      const detail = (event as CustomEvent<{ mode?: AskRudyMode; prompt?: string }>).detail;
+      setAskMode(detail?.mode ?? "ask");
+      setAskDraft(detail?.prompt ?? "");
+      setAskModalOpen(true);
+    };
+
+    window.addEventListener("ask-rudy:open", openAskRudy);
+    return () => window.removeEventListener("ask-rudy:open", openAskRudy);
+  }, []);
+
   const normalizeCommand = (value: string) => value.trim().toLowerCase().replace(/\s+/g, " ");
 
   const scrollToSection = (sectionId: string) => {
     document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const runCommand = async (rawCommand: string) => {
+    const normalizedCommand = normalizeCommand(rawCommand);
+    setHistory((currentHistory) => [...currentHistory, rawCommand]);
+    setHistoryIndex(null);
+
+    if (normalizedCommand === "clear") {
+      setLines([{ text: "terminal cleared. try help when you want the map back." }]);
+      setAskResult(null);
+      setAskError(null);
+      setLabVisible(false);
+      setInput("");
+      return;
+    }
+
+    setLines((current) => [...current, { text: rawCommand, command: true }]);
+    setInput("");
+    const response = await resolveCommand(rawCommand);
+    setLines((current) => [
+      ...current,
+      { text: typeof response === "string" ? response : "done." },
+    ]);
+  };
+
+  const runAskRudy = async (mode: AskRudyMode, value: string) => {
+    if (!isAskRudyUiEnabled) {
+      return "Ask Rudy is a local lab right now. Production support is planned for the guarded Cloudflare/Upstash version.";
+    }
+
+    if (!value) {
+      setAskModalOpen(true);
+      setAskMode(mode);
+      return mode === "fit"
+        ? 'usage: fit we need an AI platform engineer who can build developer tools'
+        : 'usage: ask what kind of engineer is rudy?';
+    }
+
+    setAskModalOpen(true);
+    setAskMode(mode);
+    setAskDraft(value);
+    setAskLoading(true);
+    setAskResult(null);
+    setAskError(null);
+    setLabVisible(false);
+
+    try {
+      const response = await fetch("/api/ask-rudy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode, input: value }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "Ask Rudy failed.");
+      }
+
+      setAskResult(data);
+      return mode === "fit"
+        ? "role match complete. review the cards below the terminal."
+        : "answer ready. review the cards below the terminal.";
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Ask Rudy failed.";
+      setAskError(message);
+      return `ask-rudy error: ${message}`;
+    } finally {
+      setAskLoading(false);
+    }
   };
 
   const resolveCommand = (rawCommand: string) => {
@@ -422,30 +580,52 @@ function Terminal() {
       return `opening ${section.label.toLowerCase()}...`;
     }
 
+    if (command === "sources") {
+      if (!isAskRudyUiEnabled) {
+        return "Ask Rudy sources are part of the local lab and are not enabled in production yet.";
+      }
+
+      setAskModalOpen(true);
+      setLabVisible(true);
+      return askResult
+        ? "opening latest Ask Rudy sources."
+        : 'no Ask Rudy sources yet. try: ask what projects show rudy\'s ai experience?';
+    }
+
+    if (command === "lab" || command === "debug retrieval") {
+      if (!isAskRudyUiEnabled) {
+        return "Ask Rudy lab mode is disabled in production until the hosted provider is wired up.";
+      }
+
+      setAskModalOpen(true);
+      setLabVisible((visible) => !visible);
+      return askResult
+        ? "opening Ask Rudy lab details."
+        : "lab mode is ready once you run an ask or fit command.";
+    }
+
+    if (command.startsWith("ask ")) {
+      return runAskRudy("ask", rawCommand.trim().replace(/^ask\s+/i, ""));
+    }
+
+    if (command.startsWith("fit ")) {
+      return runAskRudy("fit", rawCommand.trim().replace(/^fit\s+/i, ""));
+    }
+
+    if (command === "ask" || command === "fit") {
+      return command === "fit"
+        ? 'usage: fit paste or type a role description after the command.'
+        : 'usage: ask type a question after the command.';
+    }
+
     return commands[command] ?? `not found: ${rawCommand}. try "help".`;
   };
 
-  const submit = (event: FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const rawCommand = input.trim();
     if (!rawCommand) return;
-
-    const normalizedCommand = normalizeCommand(rawCommand);
-    setHistory((currentHistory) => [...currentHistory, rawCommand]);
-    setHistoryIndex(null);
-
-    if (normalizedCommand === "clear") {
-      setLines([{ text: "terminal cleared. try help when you want the map back." }]);
-      setInput("");
-      return;
-    }
-
-    setLines((current) => [
-      ...current,
-      { text: rawCommand, command: true },
-      { text: resolveCommand(rawCommand) },
-    ]);
-    setInput("");
+    await runCommand(rawCommand);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -478,35 +658,385 @@ function Terminal() {
   };
 
   return (
-    <section className="terminal-card" onClick={() => inputRef.current?.focus()} aria-label="Interactive terminal">
-      <div className="terminal-card__bar" aria-hidden="true">
-        <span className="terminal-dot terminal-dot--red" />
-        <span className="terminal-dot terminal-dot--yellow" />
-        <span className="terminal-dot terminal-dot--green" />
-        <span className="terminal-title">rudy@portfolio</span>
+    <section className="terminal-stack" aria-label="Interactive terminal and Ask Rudy output">
+      <div className="terminal-card" onClick={() => inputRef.current?.focus()} aria-label="Interactive terminal">
+        <div className="terminal-card__bar" aria-hidden="true">
+          <span className="terminal-dot terminal-dot--red" />
+          <span className="terminal-dot terminal-dot--yellow" />
+          <span className="terminal-dot terminal-dot--green" />
+          <span className="terminal-title">rudy@portfolio</span>
+        </div>
+
+        <div className="terminal-card__body" ref={scrollRef} aria-live="polite" aria-label="Terminal output">
+          {lines.map((line, index) => (
+            <div className="terminal-line" key={`${line.text}-${index}`}>
+              {line.command && <span className="terminal-prompt" aria-hidden="true">-&gt;</span>}
+              <span className={line.command ? "terminal-command" : ""}>{line.text}</span>
+            </div>
+          ))}
+        </div>
+
+        <form className="terminal-input" onSubmit={submit}>
+          <span aria-hidden="true">$</span>
+          <input
+            ref={inputRef}
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="type a command..."
+            aria-label="Terminal command"
+            disabled={askLoading}
+          />
+        </form>
       </div>
 
-      <div className="terminal-card__body" ref={scrollRef} aria-live="polite" aria-label="Terminal output">
-        {lines.map((line, index) => (
-          <div className="terminal-line" key={`${line.text}-${index}`}>
-            {line.command && <span className="terminal-prompt" aria-hidden="true">-&gt;</span>}
-            <span className={line.command ? "terminal-command" : ""}>{line.text}</span>
-          </div>
-        ))}
-      </div>
-
-      <form className="terminal-input" onSubmit={submit}>
-        <span aria-hidden="true">$</span>
-        <input
-          ref={inputRef}
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="type a command..."
-          aria-label="Terminal command"
+      {isAskRudyUiEnabled && (
+        <AskRudyModal
+          open={askModalOpen}
+          mode={askMode}
+          draft={askDraft}
+          result={askResult}
+          loading={askLoading}
+          error={askError}
+          labVisible={labVisible}
+          onClose={() => setAskModalOpen(false)}
+          onModeChange={setAskMode}
+          onDraftChange={setAskDraft}
+          onLabToggle={() => setLabVisible((visible) => !visible)}
+          onSubmit={(mode, value) => {
+            void runAskRudy(mode, value);
+          }}
         />
-      </form>
+      )}
     </section>
+  );
+}
+
+function AskRudyModal({
+  open,
+  mode,
+  draft,
+  result,
+  loading,
+  error,
+  labVisible,
+  onClose,
+  onModeChange,
+  onDraftChange,
+  onLabToggle,
+  onSubmit,
+}: {
+  open: boolean;
+  mode: AskRudyMode;
+  draft: string;
+  result: AskRudyResult | null;
+  loading: boolean;
+  error: string | null;
+  labVisible: boolean;
+  onClose: () => void;
+  onModeChange: (mode: AskRudyMode) => void;
+  onDraftChange: (draft: string) => void;
+  onLabToggle: () => void;
+  onSubmit: (mode: AskRudyMode, value: string) => void;
+}) {
+  if (!open) return null;
+  const modeMeta = askRudyModeMeta[mode];
+
+  return (
+    <div className="ask-rudy-modal" role="dialog" aria-modal="true" aria-labelledby="ask-rudy-title">
+      <div className="ask-rudy-modal__backdrop" onClick={onClose} />
+      <section className="ask-rudy-modal__panel">
+        <header className="ask-rudy-modal__header">
+          <div>
+            <span className="ask-rudy-kicker">Local Lab</span>
+            <h2 id="ask-rudy-title">Ask Rudy</h2>
+            <p>Query the local resume/project knowledge base with Ollama-backed retrieval.</p>
+          </div>
+          <div className="ask-rudy-header-actions">
+            <div className="ask-rudy-mode-badge" data-mode={mode} aria-label={`Current mode: ${modeMeta.label}`}>
+              <span className="ask-rudy-mode-badge__glyph" aria-hidden="true">
+                {modeMeta.glyph}
+              </span>
+              <div>
+                <strong>{modeMeta.label}</strong>
+                <small>{modeMeta.status}</small>
+              </div>
+            </div>
+            <button type="button" onClick={onClose} aria-label="Close Ask Rudy">
+              Close
+            </button>
+          </div>
+        </header>
+
+        <div className="ask-rudy-compose">
+          <div className="ask-rudy-mode-toggle" aria-label="Ask Rudy mode">
+            <button
+              type="button"
+              className={mode === "ask" ? "is-active" : ""}
+              onClick={() => onModeChange("ask")}
+            >
+              Coffee Chat
+            </button>
+            <button
+              type="button"
+              className={mode === "fit" ? "is-active" : ""}
+              onClick={() => onModeChange("fit")}
+            >
+              Role Match
+            </button>
+          </div>
+
+          <label className="ask-rudy-field">
+            <span>{modeMeta.inputLabel}</span>
+            <textarea
+              value={draft}
+              onChange={(event) => onDraftChange(event.target.value)}
+              placeholder={
+                mode === "fit"
+                  ? "Paste or describe a role..."
+                  : "Ask about Rudy's experience, projects, or work style..."
+              }
+            />
+          </label>
+
+          <div className="ask-rudy-compose__actions">
+            <div className="ask-rudy-starter-group" aria-label="Starter prompts">
+              <span>Try a starter</span>
+              <div className="ask-rudy-starters">
+                {askRudyStarterCommands.map((starter) => (
+                  <button
+                    key={starter.command}
+                    type="button"
+                    onClick={() => {
+                      onModeChange(starter.mode);
+                      onDraftChange(starter.prompt);
+                    }}
+                  >
+                    {starter.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="ask-rudy-submit-row">
+              <button type="button" disabled={!result || loading} onClick={onLabToggle}>
+                {labVisible ? "Hide Lab" : "Show Lab"}
+              </button>
+              <button
+                className="ask-rudy-submit"
+                type="button"
+                disabled={loading || !draft.trim()}
+                onClick={() => onSubmit(mode, draft.trim())}
+              >
+                {loading ? "Thinking..." : mode === "fit" ? "Check Fit" : "Ask"}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <AskRudyCards mode={mode} result={result} loading={loading} error={error} labVisible={labVisible} />
+      </section>
+    </div>
+  );
+}
+
+function formatScore(score: number) {
+  return Math.max(0, Math.min(1, score));
+}
+
+function renderInlineMarkdown(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, index) => {
+    const boldMatch = part.match(/^\*\*([^*]+)\*\*$/);
+
+    if (boldMatch) {
+      return <strong key={`${part}-${index}`}>{boldMatch[1]}</strong>;
+    }
+
+    return part;
+  });
+}
+
+function AnswerText({ text }: { text: string }) {
+  const lines = text.split("\n").map((line) => line.trim());
+  const blocks = [];
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+
+    if (!line) continue;
+
+    const unorderedItems = [];
+    const orderedItems = [];
+    let cursor = index;
+
+    while (cursor < lines.length) {
+      const unorderedMatch = lines[cursor].match(/^[-*]\s+(.+)$/);
+      if (!unorderedMatch) break;
+      unorderedItems.push(unorderedMatch[1]);
+      cursor += 1;
+    }
+
+    if (unorderedItems.length) {
+      blocks.push(
+        <ul key={`ul-${index}`}>
+          {unorderedItems.map((item) => (
+            <li key={item}>{renderInlineMarkdown(item)}</li>
+          ))}
+        </ul>,
+      );
+      index = cursor - 1;
+      continue;
+    }
+
+    while (cursor < lines.length) {
+      const orderedMatch = lines[cursor].match(/^\d+\.\s+(.+)$/);
+      if (!orderedMatch) break;
+      orderedItems.push(orderedMatch[1]);
+      cursor += 1;
+    }
+
+    if (orderedItems.length) {
+      blocks.push(
+        <ol key={`ol-${index}`}>
+          {orderedItems.map((item) => (
+            <li key={item}>{renderInlineMarkdown(item)}</li>
+          ))}
+        </ol>,
+      );
+      index = cursor - 1;
+      continue;
+    }
+
+    const headingMatch = line.match(/^\*\*(.+?)\*\*:?\s*$/);
+
+    if (headingMatch) {
+      blocks.push(<h4 key={`h4-${index}`}>{headingMatch[1]}</h4>);
+      continue;
+    }
+
+    blocks.push(<p key={`p-${index}`}>{renderInlineMarkdown(line)}</p>);
+  }
+
+  return (
+    <div className="ask-rudy-answer-body">
+      {blocks}
+    </div>
+  );
+}
+
+function AskRudyCards({
+  mode,
+  result,
+  loading,
+  error,
+  labVisible,
+}: {
+  mode: AskRudyMode;
+  result: AskRudyResult | null;
+  loading: boolean;
+  error: string | null;
+  labVisible: boolean;
+}) {
+  if (!result && !loading && !error) return null;
+
+  return (
+    <div className="ask-rudy-panel" aria-live="polite">
+      {loading && (
+        <article className="ask-rudy-card ask-rudy-card--loading" data-mode={mode}>
+          <div className="ask-rudy-card__top">
+            <span className="ask-rudy-kicker">{askRudyModeMeta[mode].label}</span>
+            <span className="ask-rudy-spinner" aria-hidden="true" />
+          </div>
+          <h3>{mode === "fit" ? "Checking the match..." : "Brewing a grounded answer..."}</h3>
+          <p>Embedding the input, searching the local index, and asking Ollama to answer from the best matches.</p>
+          <div className="ask-rudy-loading-steps" aria-hidden="true">
+            <span>embed</span>
+            <span>retrieve</span>
+            <span>compose</span>
+          </div>
+        </article>
+      )}
+
+      {error && (
+        <article className="ask-rudy-card ask-rudy-card--error">
+          <span className="ask-rudy-kicker">Local Lab</span>
+          <h3>Ask Rudy is not available yet.</h3>
+          <p>{error}</p>
+        </article>
+      )}
+
+      {result && (
+        <>
+          <article className="ask-rudy-card ask-rudy-card--answer">
+            <div className="ask-rudy-card__top">
+              <span className="ask-rudy-kicker">{result.mode === "fit" ? "Role Match" : "Coffee Chat"}</span>
+              <small>{result.elapsedMs}ms</small>
+            </div>
+            <h3>{result.mode === "fit" ? "Fit analysis" : "Answer"}</h3>
+            <AnswerText text={result.answer} />
+          </article>
+
+          {labVisible && (
+            <>
+              <div className="ask-rudy-source-grid">
+                {result.sources.slice(0, 3).map((source, index) => (
+                  <article className="ask-rudy-card ask-rudy-source-card" key={source.id}>
+                    <div className="ask-rudy-source-card__meta">
+                      <div>
+                        <span className="ask-rudy-kicker">Source {index + 1}</span>
+                        <h3>{source.title}</h3>
+                        <small>{source.path}</small>
+                      </div>
+                      <div className="ask-rudy-source-card__score">
+                        <small>{source.score.toFixed(3)}</small>
+                        <span className="ask-rudy-score" aria-label={`Similarity score ${source.score.toFixed(3)}`}>
+                          <span style={{ width: `${formatScore(source.score) * 100}%` }} />
+                        </span>
+                      </div>
+                    </div>
+                    <p>{source.body}</p>
+                    {source.tags?.length ? (
+                      <div className="ask-rudy-mini-tags">
+                        {source.tags.slice(0, 5).map((tag) => (
+                          <span key={tag}>{tag}</span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+
+              <article className="ask-rudy-card ask-rudy-lab-card">
+                <div className="ask-rudy-card__top">
+                  <span className="ask-rudy-kicker">Lab Trace</span>
+                  <small>local</small>
+                </div>
+                <h3>Pipeline trace</h3>
+                <div className="ask-rudy-steps">
+                  <span>embed input</span>
+                  <span>search vectors</span>
+                  <span>build prompt</span>
+                  <span>generate answer</span>
+                </div>
+                <dl>
+                  <div>
+                    <dt>Mode</dt>
+                    <dd>{result.mode}</dd>
+                  </div>
+                  <div>
+                    <dt>Sources</dt>
+                    <dd>{result.sources.length}</dd>
+                  </div>
+                  <div>
+                    <dt>Input</dt>
+                    <dd>{result.input}</dd>
+                  </div>
+                </dl>
+              </article>
+            </>
+          )}
+        </>
+      )}
+    </div>
   );
 }
 
@@ -815,11 +1345,19 @@ function Hero() {
           from prototype to customer-ready agents faster.
         </p>
         <div className="hero-actions">
-          <a className="primary-action" href="#projects">
+          {isAskRudyUiEnabled && (
+            <button
+              className="primary-action"
+              type="button"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent("ask-rudy:open", { detail: { mode: "ask" } }));
+              }}
+            >
+              Ask Rudy
+            </button>
+          )}
+          <a className={isAskRudyUiEnabled ? "secondary-action" : "primary-action"} href="#projects">
             View Projects
-          </a>
-          <a className="secondary-action" href="#contact">
-            Get in Touch
           </a>
           <a className="secondary-action" href="/Rudy_Pena_Resume.pdf" target="_blank" rel="noreferrer">
             Resume

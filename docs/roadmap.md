@@ -119,6 +119,9 @@ Current validation notes:
 
 The terminal should feel like a small interactive layer that rewards curiosity without taking over the whole portfolio.
 
+Related feature plan:
+- See `docs/ask-rudy-roadmap.md` for the retrieval-backed Ask Rudy roadmap: local Ollama lab, Upstash Vector production retrieval, Cloudflare Workers AI capped inference, Upstash Redis cost guardrails, and terminal-driven answer cards.
+
 ### Better Command System
 
 Status: complete for the first terminal feature pass.
