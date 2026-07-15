@@ -88,6 +88,19 @@ What Ollama does:
 - Takes chunk text.
 - Returns an embedding vector.
 
+## Provider Boundaries
+
+The local lab now runs through two explicit provider boundaries:
+
+- `ASK_RUDY_MODEL_PROVIDER=ollama`
+  - embeds chunks and questions
+  - generates the final answer from the grounded prompt
+- `ASK_RUDY_RETRIEVAL_PROVIDER=local-json`
+  - writes `.ask-rudy/local-index.json`
+  - searches the generated local index
+
+Cloudflare Workers AI and Upstash Vector are intentionally stubbed for the next production MRs. Selecting those providers now returns a clear setup error instead of silently making hosted calls.
+
 ## Asking Flow
 
 Asking is the online question-answering step.
