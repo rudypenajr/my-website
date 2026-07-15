@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "ask-rudy:index": "node scripts/ask-rudy/build-index.mjs",
+    "ask-rudy:ask": "node scripts/ask-rudy/ask.mjs",
+    "ask-rudy:fit": "node scripts/ask-rudy/ask.mjs --mode fit",
+    "ask-rudy:eval": "node scripts/ask-rudy/eval.mjs"
   },
   "dependencies": {
     "react": "^18",

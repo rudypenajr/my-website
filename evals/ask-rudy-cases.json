@@ -1,0 +1,62 @@
+[
+  {
+    "id": "coffee-engineer-type",
+    "mode": "ask",
+    "input": "What kind of engineer is Rudy?",
+    "checks": [
+      "mentions applied AI or AI platforms",
+      "mentions developer tooling or developer experience",
+      "does not invent new employers"
+    ]
+  },
+  {
+    "id": "coffee-ai-projects",
+    "mode": "ask",
+    "input": "What projects best show Rudy's AI experience?",
+    "checks": [
+      "mentions Wavves",
+      "mentions Time Crisis Wiki or retrieval",
+      "uses project evidence"
+    ]
+  },
+  {
+    "id": "coffee-current-learning",
+    "mode": "ask",
+    "input": "What is Rudy learning or building right now?",
+    "checks": [
+      "mentions AI platform work",
+      "mentions music AI or retrieval learning",
+      "stays grounded in supplied context"
+    ]
+  },
+  {
+    "id": "fit-ai-platform-tools",
+    "mode": "fit",
+    "input": "We need a product-minded AI platform engineer who can build internal developer tools, retrieval workflows, and production-facing AI systems.",
+    "checks": [
+      "identifies strong fit",
+      "mentions DTN AI platform work",
+      "mentions developer tooling"
+    ]
+  },
+  {
+    "id": "fit-kubernetes-sre",
+    "mode": "fit",
+    "input": "We need a senior Kubernetes SRE focused on cluster operations, incident response, and production reliability.",
+    "checks": [
+      "does not overstate Kubernetes experience",
+      "mentions related cloud/platform evidence",
+      "includes gaps or unknowns"
+    ]
+  },
+  {
+    "id": "fit-frontend-design-systems",
+    "mode": "fit",
+    "input": "We need a frontend engineer with strong design systems experience who can build polished internal tools.",
+    "checks": [
+      "mentions frontend experience",
+      "mentions IBM component library or design systems",
+      "mentions internal tools or product surfaces"
+    ]
+  }
+]
