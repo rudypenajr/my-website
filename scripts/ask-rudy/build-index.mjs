@@ -12,15 +12,30 @@ import { getRetrievalProvider } from "./providers/retrieval-provider.mjs";
 // 3. ask the selected model provider for an embedding vector for each chunk
 // 4. save the vector index through the selected retrieval provider
 
+function parseArgs(argv) {
+  return {
+    dryRun: argv.includes("--dry-run"),
+  };
+}
+
 async function main() {
+  const { dryRun } = parseArgs(process.argv.slice(2));
   const modelProvider = getModelProvider(modelProviderName);
   const retrievalProvider = getRetrievalProvider(retrievalProviderName);
 
   // Our code creates chunks before any model call happens.
   const chunks = await loadKnowledgeChunks();
   console.log(
-    `Indexing ${chunks.length} Ask Rudy chunks with ${modelProvider.name}/${embeddingModel} into ${retrievalProvider.name}...`,
+    `Indexing ${chunks.length} Ask Rudy chunks with ${modelProvider.name}/${modelProvider.embeddingModel ?? embeddingModel} into ${retrievalProvider.name}...`,
   );
+
+  if (dryRun) {
+    console.log("Dry run: skipping embeddings and vector writes.");
+    for (const [index, chunk] of chunks.entries()) {
+      console.log(`  ${index + 1}/${chunks.length} ${chunk.id} (${chunk.body.length} chars)`);
+    }
+    return;
+  }
 
   const embeddedChunks = [];
   for (const [index, chunk] of chunks.entries()) {

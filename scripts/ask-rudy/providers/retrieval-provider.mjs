@@ -1,4 +1,5 @@
 import { readLocalIndex, searchLocalIndex, writeLocalIndex } from "../vector-store.mjs";
+import { upstashVectorNamespace, upstashVectorRestToken, upstashVectorRestUrl } from "../config.mjs";
 
 // Retrieval providers own index persistence and vector search.
 // The local provider keeps using the JSON index so Phase 1 stays inspectable.
@@ -18,10 +19,56 @@ function createLocalJsonRetrievalProvider() {
 }
 
 function createUpstashVectorRetrievalProvider() {
+  function requireUpstashConfig() {
+    if (!upstashVectorRestUrl || !upstashVectorRestToken) {
+      throw new Error("Upstash Vector indexing needs UPSTASH_VECTOR_REST_URL and UPSTASH_VECTOR_REST_TOKEN.");
+    }
+  }
+
+  function endpoint(path) {
+    const baseUrl = upstashVectorRestUrl.replace(/\/$/, "");
+    const namespace = upstashVectorNamespace ? `/${encodeURIComponent(upstashVectorNamespace)}` : "";
+    return `${baseUrl}${path}${namespace}`;
+  }
+
+  async function postJson(path, body) {
+    requireUpstashConfig();
+
+    const response = await fetch(endpoint(path), {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${upstashVectorRestToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(`Upstash Vector ${path} failed (${response.status}): ${JSON.stringify(data ?? {})}`);
+    }
+
+    return data;
+  }
+
+  function chunkToVector(chunk) {
+    return {
+      id: chunk.id,
+      vector: chunk.embedding,
+      metadata: {
+        title: chunk.title,
+        path: chunk.path,
+        tags: chunk.tags ?? [],
+      },
+      data: chunk.body,
+    };
+  }
+
   return {
     name: "upstash-vector",
-    async writeChunks() {
-      throw new Error("Upstash Vector indexing is planned for the production indexing MR.");
+    async writeChunks(chunks) {
+      const vectors = chunks.map(chunkToVector);
+      await postJson("/upsert", vectors);
     },
     async search() {
       throw new Error("Upstash Vector search is planned for the production API MR.");
