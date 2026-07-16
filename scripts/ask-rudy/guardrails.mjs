@@ -45,7 +45,9 @@ function redisEndpoint() {
 
 async function redisCommand(command) {
   if (!upstashRedisRestUrl || !upstashRedisRestToken) {
-    throw new Error("Upstash Redis guardrails need UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.");
+    throw new Error(
+      "Upstash Redis guardrails need UPSTASH_REDIS_REST_URL/UPSTASH_REDIS_REST_TOKEN or KV_REST_API_URL/KV_REST_API_TOKEN.",
+    );
   }
 
   const response = await fetch(redisEndpoint(), {
