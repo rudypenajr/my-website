@@ -159,10 +159,6 @@ export async function reserveAskRudyUsage({ request }) {
       return blocked("global-monthly-limit", "Ask Rudy hit this month's global safety cap.");
     }
 
-    if (ipDailyCount > guardrailConfig.ipDailyLimit) {
-      return blocked("ip-daily-limit", "Ask Rudy hit the per-visitor daily safety cap. Try again tomorrow.");
-    }
-
     return {
       allowed: true,
       counters: {
@@ -180,6 +176,10 @@ export async function reserveAskRudyUsage({ request }) {
       },
     };
   } catch (error) {
+    console.error("Ask Rudy guardrail check failed", {
+      message: error instanceof Error ? error.message : String(error),
+    });
+
     return blocked(
       "guardrail-check-failed",
       "Ask Rudy guardrails could not be verified, so the hosted model call was skipped.",
