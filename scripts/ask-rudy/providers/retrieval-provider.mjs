@@ -70,8 +70,27 @@ function createUpstashVectorRetrievalProvider() {
       const vectors = chunks.map(chunkToVector);
       await postJson("/upsert", vectors);
     },
-    async search() {
-      throw new Error("Upstash Vector search is planned for the production API MR.");
+    async search({ queryEmbedding, topK }) {
+      const data = await postJson("/query", {
+        vector: queryEmbedding,
+        topK,
+        includeMetadata: true,
+        includeData: true,
+      });
+
+      const results = data?.result;
+      if (!Array.isArray(results)) {
+        throw new Error("Upstash Vector returned a query response without a result array.");
+      }
+
+      return results.map((result) => ({
+        id: result.id,
+        title: result.metadata?.title ?? result.id,
+        path: result.metadata?.path ?? "upstash-vector",
+        tags: result.metadata?.tags ?? [],
+        body: result.data ?? "",
+        score: result.score,
+      }));
     },
   };
 }

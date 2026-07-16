@@ -86,6 +86,10 @@ Before every hosted model call:
 
 If any guardrail blocks the call, return a friendly terminal response and do not retry with another provider.
 
+The production API now follows this shape. If Upstash Redis is missing, a switch
+is off, or a cap is exceeded, the request stops before Cloudflare Workers AI is
+called.
+
 Example fallback copy:
 
 ```txt
@@ -264,6 +268,10 @@ Acceptance:
 - The feature works with small public caps.
 - No fallback path can call an uncapped paid model.
 
+Status: partially implemented in the production API guardrail MR. The API can use
+Cloudflare chat plus Upstash Vector retrieval, but the public UI should remain
+disabled until the production smoke test is complete.
+
 ### Phase 5 - Upstash Redis Guardrails
 
 Goal: make cost control explicit and testable.
@@ -280,6 +288,10 @@ Acceptance:
 - Requests stop before model calls when limits are reached.
 - Guardrail decisions are visible in `debug retrieval`.
 - The site can be deployed with public AI disabled by default.
+
+Status: API guardrails implemented for kill switches, global daily/monthly caps,
+per-visitor daily caps, and input length limits. Completion logging and UI debug
+surfacing can follow in a smaller polish MR.
 
 ### Phase 6 - Evals And Lab Mode
 
@@ -357,6 +369,57 @@ npm run ask-rudy:index:prod
 ```
 
 This path uses Cloudflare Workers AI embeddings and upserts vectors into Upstash Vector. It does not enable public Ask Rudy traffic.
+
+## Production API Guardrail MR
+
+This MR wires the hosted API path without turning on the public UI by default.
+
+Required Vercel environment variables:
+
+```bash
+ASK_RUDY_PROD_ENABLED=false
+NEXT_PUBLIC_ASK_RUDY_ENABLED=false
+
+CLOUDFLARE_ACCOUNT_ID=
+CLOUDFLARE_API_TOKEN=
+ASK_RUDY_CLOUDFLARE_EMBED_MODEL=@cf/baai/bge-base-en-v1.5
+ASK_RUDY_CLOUDFLARE_CHAT_MODEL=@cf/meta/llama-3.2-3b-instruct
+ASK_RUDY_MAX_OUTPUT_TOKENS=700
+
+UPSTASH_VECTOR_REST_URL=
+UPSTASH_VECTOR_REST_TOKEN=
+ASK_RUDY_UPSTASH_NAMESPACE=ask-rudy
+
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+ASK_RUDY_PROVIDER_CLOUDFLARE_ENABLED=true
+ASK_RUDY_DAILY_LIMIT=50
+ASK_RUDY_MONTHLY_LIMIT=1000
+ASK_RUDY_IP_DAILY_LIMIT=3
+ASK_RUDY_IP_HASH_SALT=
+```
+
+Recommended launch sequence:
+
+1. Deploy with `ASK_RUDY_PROD_ENABLED=false` and `NEXT_PUBLIC_ASK_RUDY_ENABLED=false`.
+2. Confirm the build passes and the existing site behaves normally.
+3. Set Redis kill switches to enabled:
+
+```txt
+ask-rudy:enabled = true
+ask-rudy:provider:cloudflare:enabled = true
+```
+
+4. Flip `ASK_RUDY_PROD_ENABLED=true` in a preview deployment and test the API.
+5. Only after the API smoke test passes, flip `NEXT_PUBLIC_ASK_RUDY_ENABLED=true`.
+
+Fast shutdown options:
+
+```txt
+ASK_RUDY_PROD_ENABLED=false
+ask-rudy:enabled = false
+ask-rudy:provider:cloudflare:enabled = false
+```
 
 ## Local Phase 1 Commands
 
