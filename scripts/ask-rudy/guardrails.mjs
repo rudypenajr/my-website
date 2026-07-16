@@ -72,6 +72,12 @@ async function readSwitch(key) {
   return typeof value === "string" ? value.toLowerCase() : value;
 }
 
+async function readCounter(key) {
+  const value = await redisCommand(["GET", key]);
+  const count = Number(value ?? 0);
+  return Number.isFinite(count) ? count : 0;
+}
+
 async function incrementCounter(key, ttlSeconds) {
   const count = Number(await redisCommand(["INCR", key]));
   if (count === 1) {
@@ -119,10 +125,30 @@ export async function reserveAskRudyUsage({ request }) {
     const monthlyKey = `ask-rudy:global:monthly_calls:${month}`;
     const ipDailyKey = `ask-rudy:ip:${ipHash}:daily_calls:${day}`;
 
-    const [dailyCount, monthlyCount, ipDailyCount] = await Promise.all([
+    const [currentDailyCount, currentMonthlyCount, currentIpDailyCount] = await Promise.all([
+      readCounter(dailyKey),
+      readCounter(monthlyKey),
+      readCounter(ipDailyKey),
+    ]);
+
+    if (currentDailyCount >= guardrailConfig.globalDailyLimit) {
+      return blocked("global-daily-limit", "Ask Rudy hit today's global safety cap. Try again tomorrow.");
+    }
+
+    if (currentMonthlyCount >= guardrailConfig.globalMonthlyLimit) {
+      return blocked("global-monthly-limit", "Ask Rudy hit this month's global safety cap.");
+    }
+
+    if (currentIpDailyCount >= guardrailConfig.ipDailyLimit) {
+      return blocked("ip-daily-limit", "Ask Rudy hit the per-visitor daily safety cap. Try again tomorrow.");
+    }
+
+    // Reserve global hosted-call budget before inference. Per-visitor usage is
+    // recorded only after a successful answer so setup/config failures do not
+    // consume a visitor's daily allowance.
+    const [dailyCount, monthlyCount] = await Promise.all([
       incrementCounter(dailyKey, REDIS_DAILY_TTL_SECONDS),
       incrementCounter(monthlyKey, REDIS_MONTHLY_TTL_SECONDS),
-      incrementCounter(ipDailyKey, REDIS_DAILY_TTL_SECONDS),
     ]);
 
     if (dailyCount > guardrailConfig.globalDailyLimit) {
@@ -142,12 +168,15 @@ export async function reserveAskRudyUsage({ request }) {
       counters: {
         dailyCount,
         monthlyCount,
-        ipDailyCount,
+        ipDailyCount: currentIpDailyCount,
       },
       limits: {
         globalDailyLimit: guardrailConfig.globalDailyLimit,
         globalMonthlyLimit: guardrailConfig.globalMonthlyLimit,
         ipDailyLimit: guardrailConfig.ipDailyLimit,
+      },
+      reservation: {
+        ipDailyKey,
       },
     };
   } catch (error) {
@@ -157,4 +186,14 @@ export async function reserveAskRudyUsage({ request }) {
       503,
     );
   }
+}
+
+export async function recordAskRudySuccess(guardrailResult) {
+  const ipDailyKey = guardrailResult?.reservation?.ipDailyKey;
+  if (!ipDailyKey) return null;
+
+  const ipDailyCount = await incrementCounter(ipDailyKey, REDIS_DAILY_TTL_SECONDS);
+  return {
+    ipDailyCount,
+  };
 }

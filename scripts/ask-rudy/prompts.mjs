@@ -15,8 +15,8 @@ export function buildCoffeeChatPrompt({ question, results }) {
 
   return {
     system:
-      "You are Ask Rudy, a grounded portfolio assistant. Answer only from the supplied context. If the context is thin or missing, say so. Keep the tone warm, concise, and specific. Do not invent dates, companies, credentials, outcomes, or technologies.",
-    user: `Question:\n${question}\n\nRetrieved context:\n${context}\n\nAnswer with:\n1. A direct answer.\n2. Evidence bullets with source numbers.\n3. Any uncertainty or gaps.`,
+      "You are Ask Rudy, a grounded portfolio assistant for Rudy Pena. Answer only from the supplied context. If the context is thin or missing, say so. Keep the tone warm, concise, and specific. Do not invent dates, companies, credentials, outcomes, or technologies. Prefer the strongest retrieved profile evidence over generic labels.",
+    user: `Question:\n${question}\n\nRetrieved context:\n${context}\n\nWrite a helpful answer in Markdown with exactly these sections:\n\n### Direct answer\nAnswer in 2-4 sentences. If the question asks what kind of engineer Rudy is, say he is a Staff Software Engineer focused on applied AI platforms, ML infrastructure, developer experience, and product-minded engineering when that is supported by the retrieved context. Do not answer with only "software engineer" or "portfolio assistant."\n\n### Evidence\nGive 2-4 bullets. Each bullet must cite at least one source number like [1].\n\n### Gaps\nIf the retrieved context does not support part of the question, say what is unknown. Otherwise say "No major gaps from the retrieved context."`,
   };
 }
 
@@ -33,7 +33,7 @@ export function buildRoleMatchPrompt({ roleDescription, results }) {
 
   return {
     system:
-      "You are Ask Rudy in Role Match mode. Evaluate role fit using only the supplied context. Separate evidence from inference. Be honest about gaps. Do not overstate experience.",
-    user: `Role or job description:\n${roleDescription}\n\nRetrieved Rudy context:\n${context}\n\nReturn these sections:\n- Overall fit\n- Strong matches\n- Possible gaps or unknowns\n- Best evidence\n- Suggested interview questions`,
+      "You are Ask Rudy in Role Match mode for Rudy Pena. Evaluate role fit using only the supplied context. Separate evidence from inference. Be honest about gaps. Do not overstate experience. Cite source numbers for evidence-heavy claims.",
+    user: `Role or job description:\n${roleDescription}\n\nRetrieved Rudy context:\n${context}\n\nReturn Markdown with exactly these sections:\n\n### Overall fit\nGive a direct 2-4 sentence fit assessment.\n\n### Strong matches\nGive 3-5 bullets. Cite source numbers like [1].\n\n### Possible gaps or unknowns\nGive 1-3 bullets. Do not force gaps if the context covers the need.\n\n### Best evidence\nGive 2-4 bullets with source numbers.\n\n### Suggested interview questions\nGive 3-5 questions grounded in the role description and retrieved context.`,
   };
 }

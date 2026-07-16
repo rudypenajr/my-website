@@ -51,9 +51,10 @@ export async function POST(request: NextRequest) {
 
     if (productionEnabled) {
       // @ts-ignore - Node-only production guardrail helper shared with scripts.
-      const { reserveAskRudyUsage } = await import("../../../../scripts/ask-rudy/guardrails.mjs");
+      const { recordAskRudySuccess, reserveAskRudyUsage } = await import(
+        "../../../../scripts/ask-rudy/guardrails.mjs"
+      );
       const guardrailResult: any = await reserveAskRudyUsage({ request });
-      guardrails = guardrailResult;
 
       if (!guardrailResult.allowed) {
         return NextResponse.json(
@@ -65,12 +66,30 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      guardrails = {
+        allowed: true,
+        counters: guardrailResult.counters,
+        limits: guardrailResult.limits,
+      };
+
       result = await runAskRudyQuery({
         input,
         mode,
         modelProviderName: "cloudflare",
         retrievalProviderName: "upstash-vector",
       });
+
+      try {
+        const successCounters = await recordAskRudySuccess(guardrailResult);
+        if (successCounters) {
+          guardrails.counters = {
+            ...guardrails.counters,
+            ...successCounters,
+          };
+        }
+      } catch {
+        // The answer succeeded; do not turn post-answer accounting into a user-facing failure.
+      }
     } else {
       result = await runAskRudyQuery({ input, mode });
     }

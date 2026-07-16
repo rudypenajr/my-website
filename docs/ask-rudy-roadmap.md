@@ -90,6 +90,11 @@ The production API now follows this shape. If Upstash Redis is missing, a switch
 is off, or a cap is exceeded, the request stops before Cloudflare Workers AI is
 called.
 
+Global daily/monthly counters are reserved before inference to protect hosted
+spend. Per-visitor daily counters are recorded after a successful answer so
+Cloudflare setup mistakes or provider failures do not consume a visitor's daily
+allowance during smoke testing.
+
 Example fallback copy:
 
 ```txt
@@ -426,6 +431,14 @@ Fast shutdown options:
 ASK_RUDY_PROD_ENABLED=false
 ask-rudy:enabled = false
 ask-rudy:provider:cloudflare:enabled = false
+```
+
+Useful smoke-test reset keys:
+
+```txt
+ask-rudy:ip:*:daily_calls:YYYY-MM-DD
+ask-rudy:global:daily_calls:YYYY-MM-DD
+ask-rudy:global:monthly_calls:YYYY-MM
 ```
 
 ## Local Phase 1 Commands
