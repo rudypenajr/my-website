@@ -202,7 +202,9 @@ evals/ask-rudy-cases.json
   Starter eval questions and human-readable checks.
 
 src/app/api/ask-rudy/route.ts
-  Local-only website API route that calls the same query pipeline.
+  Website API route. In local development it calls Ollama when
+  `ASK_RUDY_LOCAL_ENABLED=true`; in production it requires explicit hosted
+  provider and Redis guardrail configuration before calling Cloudflare.
 ```
 
 ## Glossary

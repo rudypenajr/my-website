@@ -1,5 +1,12 @@
 import { embedText as embedWithOllama, generateAnswer as generateWithOllama } from "../ollama-provider.mjs";
-import { cloudflareAccountId, cloudflareApiToken, cloudflareEmbeddingModel, embeddingModel } from "../config.mjs";
+import {
+  cloudflareAccountId,
+  cloudflareApiToken,
+  cloudflareChatModel,
+  cloudflareEmbeddingModel,
+  cloudflareMaxOutputTokens,
+  embeddingModel,
+} from "../config.mjs";
 
 // Model providers own the model calls only:
 // - embeddings turn text into vectors
@@ -50,6 +57,7 @@ function createCloudflareModelProvider() {
 
   return {
     name: "cloudflare",
+    chatModel: cloudflareChatModel,
     embeddingModel: cloudflareEmbeddingModel,
     async embedText(input) {
       const data = await runCloudflareAi(cloudflareEmbeddingModel, { text: [input] });
@@ -61,8 +69,22 @@ function createCloudflareModelProvider() {
 
       return embedding;
     },
-    async generateAnswer() {
-      throw new Error("Cloudflare Workers AI generation is planned for the production API MR.");
+    async generateAnswer({ system, user }) {
+      const data = await runCloudflareAi(cloudflareChatModel, {
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user },
+        ],
+        temperature: 0.2,
+        max_tokens: cloudflareMaxOutputTokens,
+      });
+      const content = data?.result?.response ?? data?.result?.text;
+
+      if (!content) {
+        throw new Error("Cloudflare Workers AI returned a generation response without text content.");
+      }
+
+      return content;
     },
   };
 }
