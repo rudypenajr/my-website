@@ -330,6 +330,34 @@ The smallest useful slice is local-only:
 
 After that works, wire it into the terminal UI and move retrieval storage to Upstash Vector.
 
+## Production Indexing Commands
+
+MR 2 adds the production indexing path without enabling the public production API.
+
+Required environment variables:
+
+```bash
+CLOUDFLARE_ACCOUNT_ID=
+CLOUDFLARE_API_TOKEN=
+UPSTASH_VECTOR_REST_URL=
+UPSTASH_VECTOR_REST_TOKEN=
+ASK_RUDY_UPSTASH_NAMESPACE=ask-rudy
+```
+
+Use dry-run first. It validates chunking and command wiring without embedding or upserting:
+
+```bash
+npm run ask-rudy:index:prod -- --dry-run
+```
+
+When the Cloudflare and Upstash credentials are available:
+
+```bash
+npm run ask-rudy:index:prod
+```
+
+This path uses Cloudflare Workers AI embeddings and upserts vectors into Upstash Vector. It does not enable public Ask Rudy traffic.
+
 ## Local Phase 1 Commands
 
 Install and start Ollama outside this repo, then pull the default local models:

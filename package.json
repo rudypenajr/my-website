@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "ask-rudy:index": "node scripts/ask-rudy/build-index.mjs",
+    "ask-rudy:index:prod": "ASK_RUDY_MODEL_PROVIDER=cloudflare ASK_RUDY_RETRIEVAL_PROVIDER=upstash-vector node scripts/ask-rudy/build-index.mjs",
     "ask-rudy:ask": "node scripts/ask-rudy/ask.mjs",
     "ask-rudy:fit": "node scripts/ask-rudy/ask.mjs --mode fit",
     "ask-rudy:eval": "node scripts/ask-rudy/eval.mjs"

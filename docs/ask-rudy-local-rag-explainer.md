@@ -174,6 +174,12 @@ scripts/ask-rudy/chunk-knowledge.mjs
 scripts/ask-rudy/ollama-provider.mjs
   Talks to Ollama for embeddings and chat generation.
 
+scripts/ask-rudy/providers/model-provider.mjs
+  Chooses the model provider: Ollama for local, Cloudflare embeddings for production indexing.
+
+scripts/ask-rudy/providers/retrieval-provider.mjs
+  Chooses the retrieval provider: local JSON for local, Upstash Vector for production indexing.
+
 scripts/ask-rudy/vector-store.mjs
   Saves, loads, and searches the local vector index.
 
