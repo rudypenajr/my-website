@@ -42,8 +42,8 @@ export const cloudflareMaxOutputTokens = numberFromEnv("ASK_RUDY_MAX_OUTPUT_TOKE
 export const upstashVectorRestUrl = process.env.UPSTASH_VECTOR_REST_URL;
 export const upstashVectorRestToken = process.env.UPSTASH_VECTOR_REST_TOKEN;
 export const upstashVectorNamespace = process.env.ASK_RUDY_UPSTASH_NAMESPACE ?? "";
-export const upstashRedisRestUrl = process.env.UPSTASH_REDIS_REST_URL;
-export const upstashRedisRestToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+export const upstashRedisRestUrl = process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
+export const upstashRedisRestToken = process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
 export const prodAskRudyEnabled = process.env.ASK_RUDY_PROD_ENABLED === "true";
 export const prodCloudflareEnabled = process.env.ASK_RUDY_PROVIDER_CLOUDFLARE_ENABLED !== "false";
 export const guardrailConfig = {

@@ -392,12 +392,19 @@ ASK_RUDY_UPSTASH_NAMESPACE=ask-rudy
 
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
+# Or reuse Vercel KV shared env vars:
+# KV_REST_API_URL=
+# KV_REST_API_TOKEN=
 ASK_RUDY_PROVIDER_CLOUDFLARE_ENABLED=true
 ASK_RUDY_DAILY_LIMIT=50
 ASK_RUDY_MONTHLY_LIMIT=1000
 ASK_RUDY_IP_DAILY_LIMIT=3
 ASK_RUDY_IP_HASH_SALT=
 ```
+
+If the Redis database is shared with another project, keep the `ask-rudy:*`
+key prefix. That keeps these guardrail switches and counters separate from
+other app data.
 
 Recommended launch sequence:
 
