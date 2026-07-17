@@ -30,6 +30,26 @@
     ]
   },
   {
+    "id": "coffee-python-skill",
+    "mode": "ask",
+    "input": "Does Rudy know Python?",
+    "checks": [
+      "directly answers yes or supported by context",
+      "mentions Python SDKs, Python CLIs, or Python ML/retrieval work",
+      "does not answer only with a generic profile summary"
+    ]
+  },
+  {
+    "id": "coffee-golang-skill",
+    "mode": "ask",
+    "input": "Does Rudy know Golang?",
+    "checks": [
+      "directly answers yes or past Go experience",
+      "mentions Go CLI tooling or Go full-stack work at Bitfusion",
+      "does not answer only with a generic profile summary"
+    ]
+  },
+  {
     "id": "fit-ai-platform-tools",
     "mode": "fit",
     "input": "We need a product-minded AI platform engineer who can build internal developer tools, retrieval workflows, and production-facing AI systems.",
