@@ -515,7 +515,7 @@ function Terminal() {
 
   const runAskRudy = async (mode: AskRudyMode, value: string) => {
     if (!isAskRudyUiEnabled) {
-      return "Ask Rudy is a local lab right now. Production support is planned for the guarded Cloudflare/Upstash version.";
+      return "Ask Rudy is currently disabled.";
     }
 
     if (!value) {
@@ -582,7 +582,7 @@ function Terminal() {
 
     if (command === "sources") {
       if (!isAskRudyUiEnabled) {
-        return "Ask Rudy sources are part of the local lab and are not enabled in production yet.";
+        return "Ask Rudy sources are not enabled right now.";
       }
 
       setAskModalOpen(true);
@@ -748,9 +748,9 @@ function AskRudyModal({
       <section className="ask-rudy-modal__panel">
         <header className="ask-rudy-modal__header">
           <div>
-            <span className="ask-rudy-kicker">Local Lab</span>
+            <span className="ask-rudy-kicker">Retrieval Lab</span>
             <h2 id="ask-rudy-title">Ask Rudy</h2>
-            <p>Query the local resume/project knowledge base with Ollama-backed retrieval.</p>
+            <p>Query Rudy&apos;s resume/project knowledge base with grounded AI answers.</p>
           </div>
           <div className="ask-rudy-header-actions">
             <div className="ask-rudy-mode-badge" data-mode={mode} aria-label={`Current mode: ${modeMeta.label}`}>
@@ -906,6 +906,13 @@ function AnswerText({ text }: { text: string }) {
       continue;
     }
 
+    const markdownHeadingMatch = line.match(/^#{2,4}\s+(.+)$/);
+
+    if (markdownHeadingMatch) {
+      blocks.push(<h4 key={`h4-${index}`}>{renderInlineMarkdown(markdownHeadingMatch[1])}</h4>);
+      continue;
+    }
+
     const headingMatch = line.match(/^\*\*(.+?)\*\*:?\s*$/);
 
     if (headingMatch) {
@@ -947,7 +954,7 @@ function AskRudyCards({
             <span className="ask-rudy-spinner" aria-hidden="true" />
           </div>
           <h3>{mode === "fit" ? "Checking the match..." : "Brewing a grounded answer..."}</h3>
-          <p>Embedding the input, searching the local index, and asking Ollama to answer from the best matches.</p>
+          <p>Embedding the input, searching the knowledge base, and composing an answer from the best matches.</p>
           <div className="ask-rudy-loading-steps" aria-hidden="true">
             <span>embed</span>
             <span>retrieve</span>
@@ -958,7 +965,7 @@ function AskRudyCards({
 
       {error && (
         <article className="ask-rudy-card ask-rudy-card--error">
-          <span className="ask-rudy-kicker">Local Lab</span>
+          <span className="ask-rudy-kicker">Ask Rudy</span>
           <h3>Ask Rudy is not available yet.</h3>
           <p>{error}</p>
         </article>
@@ -1008,7 +1015,7 @@ function AskRudyCards({
               <article className="ask-rudy-card ask-rudy-lab-card">
                 <div className="ask-rudy-card__top">
                   <span className="ask-rudy-kicker">Lab Trace</span>
-                  <small>local</small>
+                  <small>grounded retrieval</small>
                 </div>
                 <h3>Pipeline trace</h3>
                 <div className="ask-rudy-steps">
