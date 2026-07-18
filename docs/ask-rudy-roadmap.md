@@ -394,6 +394,8 @@ Recommended immediate MR sequence:
 3. Add eval cases for inference, microservices, production AI, Go, Python, and known gaps.
 4. Run `npm run ask-rudy:index:prod` after merge to update Upstash Vector.
 
+The Phase 7 question inventory lives in `docs/ask-rudy-question-map.md`.
+
 ## Open Questions
 
 - Which Ollama chat model should be the first local default?
