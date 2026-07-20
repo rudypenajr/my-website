@@ -318,6 +318,84 @@ Acceptance:
 - Prompt or retrieval changes can be compared before/after.
 - Lab mode explains what changed in a way visitors can understand.
 
+### Phase 7 - Knowledge Quality Expansion
+
+Status: current phase. The production system works; the main quality constraint is now source coverage.
+
+Goal: make Ask Rudy better by expanding the knowledge base, question map, and eval set instead of changing model providers.
+
+Tasks:
+- Add a question map for the things visitors and recruiters naturally ask.
+- Add richer source files for journey, inference, microservices, AI platform work, developer tooling, and side projects.
+- Make source files explicit about current experience, historical experience, adjacent experience, and unknowns.
+- Add evals for skill questions, absence questions, role questions, and side-project questions.
+- Re-index production after knowledge changes.
+- Compare before/after answers for the top question map items.
+
+Suggested source expansion:
+
+```txt
+knowledge/
+  journey/
+    inference.md
+    microservices.md
+    ai-platform.md
+    developer-tools.md
+    frontend-to-ai-platform.md
+  projects/
+    wavves.md
+    time-crisis-wiki.md
+    portfolio.md
+```
+
+Suggested question map categories:
+
+```txt
+Skills:
+  Does Rudy know Python?
+  Does Rudy know Go/Golang?
+  Does Rudy know TypeScript?
+  Does Rudy know FastAPI?
+
+AI and ML systems:
+  Does Rudy understand inference?
+  Has Rudy built production AI systems?
+  Has Rudy worked with embeddings and retrieval?
+  Has Rudy built eval loops?
+
+Architecture:
+  Has Rudy built microservices?
+  Has Rudy designed APIs and service boundaries?
+  Has Rudy worked with AWS infrastructure?
+  Has Rudy worked with auth and identity boundaries?
+
+Role fit:
+  Is Rudy a fit for an AI platform role?
+  Is Rudy a fit for a developer tools role?
+  Is Rudy more frontend, backend, or platform?
+
+Gaps:
+  Does Rudy have Kubernetes production ownership?
+  Does Rudy know BackboneJS?
+  What should not be overstated?
+```
+
+Acceptance:
+- Specific skill questions answer the skill directly before profile context.
+- Side-project questions retrieve side-project evidence.
+- Inference/microservices questions retrieve explicit journey evidence instead of only adjacent platform context.
+- Absence questions say "not shown" when the knowledge base does not support a claim.
+- Production answers improve after re-indexing without changing the model provider.
+
+Recommended immediate MR sequence:
+
+1. Add `docs/ask-rudy-question-map.md`.
+2. Add `knowledge/journey/inference.md` and `knowledge/journey/microservices.md`.
+3. Add eval cases for inference, microservices, production AI, Go, Python, and known gaps.
+4. Run `npm run ask-rudy:index:prod` after merge to update Upstash Vector.
+
+The Phase 7 question inventory lives in `docs/ask-rudy-question-map.md`.
+
 ## Open Questions
 
 - Which Ollama chat model should be the first local default?
